@@ -24,8 +24,8 @@ client.on("message", async message => {
  
     var command = messageArray[0];
  
-    if (command === `${prefix}youtube`) {
-        return message.channel.send("Dit is Jens zijn Kanaal: https://www.youtube.com/c/JensGamerYT !");
+    if (command === `${prefix}twitch`) {
+        return message.channel.send("Mijn Twitch? https://www.twitch.tv/JensGamerLive !");
     }
 
     if (command === `${prefix}mcinfo`) {
@@ -34,7 +34,7 @@ client.on("message", async message => {
             .setColor("#ff0339")
             .addFields(
                 {name: "IP:", value:"`play.jgserver.be`"},
-                {name: "Available Versions:", value:"1.15.2 --> 1.16.3"},
+                {name: "Available Versions:", value:"1.16.5"},
                 {name: "Status:", value:"OFFLINE"},
             )
             .setFooter("JG | Network Bot", "https://dunb17ur4ymx4.cloudfront.net/webstore/logos/a8415ba6cd7c3691a5ea49bdcc2ccf783ab93b55.png")    
@@ -47,7 +47,7 @@ client.on("message", async message => {
         var botEmbet = new discord.MessageEmbed()
             .setColor("003cff")
             .addFields(
-                {name: "YouTube", value:"`*YouTube`"},
+                {name: "Twitch", value:"`*Twitch`"},
                 {name: "Minecraft Info:", value:"*mcinfo"},
             )
             .setFooter("JG | Network Bot", "https://dunb17ur4ymx4.cloudfront.net/webstore/logos/a8415ba6cd7c3691a5ea49bdcc2ccf783ab93b55.png")    
