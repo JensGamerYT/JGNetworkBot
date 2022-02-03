@@ -1,57 +1,97 @@
-const discord = require("discord.js")
+const express = require('express')
+const app = express();
+const port = 3000
+
+app.get('/', (req, res) => res.send('WoW, dat voelt goed. Weer aan de slag met commandos uitvoeren 🤖'))
+
+app.listen(port, () =>
+console.log(`Your app is listening a http://localhost:${port}`)
+);
+
+const { Client, Intents, Collection } = require("discord.js");
+
 const botConfig = require("./botconfig.json");
- 
-const client = new discord.Client();
-client.login(process.env.token);
- 
-client.on("ready", async () => {
- 
+
+const fs = require("fs");
+
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+
+client.commands = new Collection();
+
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith(".js"));
+
+for(const file of commandFiles) {
+
+    const command = require(`./commands/${file}`);
+
+    client.commands.set(command.help.name, command);
+
+    console.log(`De file ${command.help.name}.js is geladen`);
+
+}
+
+client.once("ready", () => {
     console.log(`${client.user.username} is online.`);
-    client.user.setActivity("JG | Network Bot | *help", { type: "PLAYING" });
- 
+    client.user.setActivity("-help", { type: "LISTENING" });
+
+    const statusOptions = [
+        "JGNetword Bot | *help",
+        "Developed by Jens V.",
+    ]
+
+    let counter = 0;
+
+    let time = 1 * 60 * 1000; //|1 Minuut.|
+    //let time = 5 *1000;
+
+    const updateStatus = () => {
+
+        client.user.setPresence({
+
+            status: "online",
+            activities: [
+                {
+                    name: statusOptions[counter]
+                }
+            ]
+        });
+
+        if(++counter >= statusOptions.length) counter = 0;
+
+        setTimeout(updateStatus, time);
+    }
+    updateStatus();
+
 });
 
+client.on("messageCreate", async message => {
+    
+    if (message.author.bot) return;
 
-client.on("message", async message => {
- 
-    if(message.author.bot) return;
- 
-    if(message.channel.type === "dm") return;
- 
     var prefix = botConfig.prefix;
- 
+
     var messageArray = message.content.split(" ");
- 
+
     var command = messageArray[0];
- 
-    if (command === `${prefix}youtube`) {
-        return message.channel.send("Dit is Jens zijn Kanaal: https://www.youtube.com/c/JensGamerYT !");
+
+    if(!message.content.startsWith(prefix)) return;
+
+    const commandData = client.commands.get(command.slice(prefix.length));
+
+    if(!commandData) return;
+
+    var arguments = messageArray.slice(1);
+
+    try{
+
+        await commandData.run(client, message, arguments);
+
+    } catch (error) {
+        console.log(error);
+        await message.reply("Er was een probleem tijdens het uitvoeren van deze command.");
+        
     }
 
-    if (command === `${prefix}mcinfo`) {
-        
-        var botEmbet = new discord.MessageEmbed()
-            .setColor("#ff0339")
-            .addFields(
-                {name: "IP:", value:"`play.jgserver.be`"},
-                {name: "Available Versions:", value:"1.15.2 --> 1.16.3"},
-                {name: "Status:", value:"OFFLINE"},
-            )
-            .setFooter("JG | Network Bot", "https://dunb17ur4ymx4.cloudfront.net/webstore/logos/a8415ba6cd7c3691a5ea49bdcc2ccf783ab93b55.png")    
+})
 
-        return message.channel.send(botEmbet);
-    }
-    if (command === `${prefix}help`) {
-        
-        var botEmbet = new discord.MessageEmbed()
-            .setColor("003cff")
-            .addFields(
-                {name: "YouTube", value:"`*YouTube`"},
-                {name: "Minecraft Info:", value:"*mcinfo"},
-            )
-            .setFooter("JG | Network Bot", "https://dunb17ur4ymx4.cloudfront.net/webstore/logos/a8415ba6cd7c3691a5ea49bdcc2ccf783ab93b55.png")    
-
-        return message.channel.send(botEmbet);
-    }    
-
-});
+client.login(botConfig.token);
